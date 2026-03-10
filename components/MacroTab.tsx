@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Save, Trash2, PieChart, Target, Edit2, X, Sparkles, Loader2 } from 'lucide-react';
-import { GoogleGenAI, Type } from '@google/genai';
+
 
 type MacroRecord = {
   id: string;
@@ -76,37 +76,22 @@ export default function MacroTab({ userId }: { userId: string }) {
     if (!aiInput.trim()) return;
     setIsAnalyzing(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: `Analyze the following food/drink description and estimate the macronutrients in grams. Description: "${aiInput}". Respond in JSON.`,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              fat: { type: Type.NUMBER, description: 'Estimated fat in grams' },
-              carbs: { type: Type.NUMBER, description: 'Estimated carbohydrates in grams' },
-              protein: { type: Type.NUMBER, description: 'Estimated protein in grams' },
-            },
-            required: ['fat', 'carbs', 'protein'],
-          },
-          systemInstruction: 'You are a nutrition expert. Estimate macros accurately. Understand both English and Bahasa Indonesia.',
-        }
+      const res = await fetch('/api/ai/analyze-macros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: aiInput }),
       });
-      
-      if (response.text) {
-        const data = JSON.parse(response.text);
-        setFormData(prev => ({
-          ...prev,
-          fat: data.fat.toString(),
-          carbs: data.carbs.toString(),
-          protein: data.protein.toString(),
-          foodDescription: aiInput,
-        }));
-        setInputMode('manual'); // Switch to manual to review/edit
-        setAiInput('');
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to analyze food.');
+      setFormData(prev => ({
+        ...prev,
+        fat: data.fat.toString(),
+        carbs: data.carbs.toString(),
+        protein: data.protein.toString(),
+        foodDescription: aiInput,
+      }));
+      setInputMode('manual');
+      setAiInput('');
     } catch (error) {
       console.error(error);
       alert('Failed to analyze food. Please try again or use manual input.');

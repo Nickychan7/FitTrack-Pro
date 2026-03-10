@@ -20,11 +20,11 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: 'You are a nutrition expert. Estimate macros accurately. Understand both English and Bahasa Indonesia. Always respond with valid JSON only, no extra text.',
+          content: 'You are a nutrition expert. Understand both English and Bahasa Indonesia. Always respond with valid JSON only, no extra text.',
         },
         {
           role: 'user',
-          content: `Analyze the following food/drink description and estimate the macronutrients in grams. Description: "${description}". Respond with a JSON object containing exactly these fields: fat (number), carbs (number), protein (number).`,
+          content: `Analyze the following food/drink description and estimate the macronutrients in grams. Description: "${description}". For each macro (fat, carbs, protein), estimate a realistic minimum and maximum range, then return the MAXIMUM value of each range. Respond with a JSON object containing exactly these fields: fat (number), carbs (number), protein (number).`,
         },
       ],
       response_format: { type: 'json_object' },

@@ -30,6 +30,7 @@ export default function ExerciseTab({ userId }: { userId: string }) {
   const [records, setRecords] = useState<ExerciseRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(5);
   
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -181,6 +182,10 @@ export default function ExerciseTab({ userId }: { userId: string }) {
     return acc;
   }, {} as Record<string, ExerciseRecord[]>);
 
+  const sortedDates = Object.keys(groupedRecords);
+  const visibleDates = sortedDates.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedDates.length;
+
   return (
     <div className="space-y-8">
       <form onSubmit={handleSubmit} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
@@ -305,7 +310,9 @@ export default function ExerciseTab({ userId }: { userId: string }) {
           </div>
         ) : (
           <div className="space-y-6">
-            {Object.entries(groupedRecords).map(([date, dayRecords]) => (
+            {visibleDates.map((date) => {
+              const dayRecords = groupedRecords[date];
+              return (
               <div key={date} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 font-medium text-gray-900">
                   {formatDate(date)}
@@ -347,7 +354,18 @@ export default function ExerciseTab({ userId }: { userId: string }) {
                   ))}
                 </div>
               </div>
-            ))}
+            );
+            })}
+            {hasMore && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 10)}
+                  className="px-6 py-2.5 text-sm font-medium text-indigo-600 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-colors shadow-sm"
+                >
+                  Load More ({sortedDates.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

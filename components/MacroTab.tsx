@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Trash2, PieChart, Target, Edit2, X, Sparkles, Loader2 } from 'lucide-react';
+import { Save, Trash2, PieChart, Target, Edit2, X, Sparkles, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 
 
 type MacroRecord = {
@@ -29,6 +29,7 @@ export default function MacroTab({ userId }: { userId: string }) {
   const [inputMode, setInputMode] = useState<'manual' | 'ai'>('manual');
   const [aiInput, setAiInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
   
   const [targets, setTargets] = useState<MacroTargets>({
     calories: 2000,
@@ -190,6 +191,10 @@ export default function MacroTab({ userId }: { userId: string }) {
     acc[record.date].push(record);
     return acc;
   }, {} as Record<string, MacroRecord[]>);
+
+  const sortedDates = Object.keys(groupedRecords);
+  const visibleDates = sortedDates.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedDates.length;
 
   return (
     <div className="space-y-8">
@@ -406,7 +411,8 @@ export default function MacroTab({ userId }: { userId: string }) {
           </div>
         ) : (
           <div className="space-y-6">
-            {Object.entries(groupedRecords).map(([date, dayRecords]) => {
+            {visibleDates.map((date) => {
+              const dayRecords = groupedRecords[date];
               const totalProtein = dayRecords.reduce((sum, r) => sum + Number(r.protein || 0), 0);
               const totalCarbs = dayRecords.reduce((sum, r) => sum + Number(r.carbs || 0), 0);
               const totalFat = dayRecords.reduce((sum, r) => sum + Number(r.fat || 0), 0);
@@ -419,11 +425,41 @@ export default function MacroTab({ userId }: { userId: string }) {
 
               return (
                 <div key={date} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                  <div className="bg-gray-50 px-5 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <div className="bg-gray-50 px-5 py-4 border-b border-gray-200 flex justify-between items-center gap-3 flex-wrap">
                     <div className="font-semibold text-gray-900">{formatDate(date)}</div>
-                    <div className="text-sm font-medium text-indigo-600">
-                      <span className="text-lg font-bold">{totalCals.toFixed(0)}</span> / {targets.calories} kcal
-                    </div>
+                    {(() => {
+                      const pct = targets.calories > 0 ? (totalCals / targets.calories) * 100 : 0;
+                      const isSuccess = pct >= 85 && pct <= 100;
+                      const isWarning = pct < 85;
+                      const isDanger = pct > 100;
+                      const colorClass = isSuccess
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                        : isWarning
+                        ? 'text-amber-700 bg-amber-50 border-amber-200'
+                        : 'text-red-700 bg-red-50 border-red-200';
+                      const iconClass = isSuccess
+                        ? 'text-emerald-500'
+                        : isWarning
+                        ? 'text-amber-500'
+                        : 'text-red-500';
+                      const Icon = isSuccess ? CheckCircle2 : isWarning ? AlertTriangle : AlertCircle;
+                      return (
+                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${colorClass}`}>
+                          <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
+                          <span>
+                            <span className="text-base font-bold">{totalCals.toFixed(0)}</span>
+                            <span className="font-normal opacity-70"> / {targets.calories} kcal</span>
+                          </span>
+                          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${
+                            isSuccess ? 'bg-emerald-100 text-emerald-700'
+                            : isWarning ? 'bg-amber-100 text-amber-700'
+                            : 'bg-red-100 text-red-700'
+                          }`}>
+                            {pct.toFixed(0)}%
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                   
                   <div className="p-5">
@@ -511,6 +547,16 @@ export default function MacroTab({ userId }: { userId: string }) {
                 </div>
               );
             })}
+            {hasMore && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 10)}
+                  className="px-6 py-2.5 text-sm font-medium text-indigo-600 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-colors shadow-sm"
+                >
+                  Load More ({sortedDates.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

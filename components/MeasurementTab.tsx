@@ -20,6 +20,7 @@ export default function MeasurementTab({ userId }: { userId: string }) {
   const [records, setRecords] = useState<MeasurementRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(5);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     bodyweight: '',
@@ -288,6 +289,7 @@ export default function MeasurementTab({ userId }: { userId: string }) {
             No measurements recorded yet.
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -304,7 +306,7 @@ export default function MeasurementTab({ userId }: { userId: string }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {records.map((record, index) => {
+                {records.slice(0, visibleCount).map((record, index) => {
                   const prevRecord = records[index + 1];
                   
                   return (
@@ -362,6 +364,17 @@ export default function MeasurementTab({ userId }: { userId: string }) {
               </tbody>
             </table>
           </div>
+          {visibleCount < records.length && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => setVisibleCount(prev => prev + 10)}
+                className="px-6 py-2.5 text-sm font-medium text-indigo-600 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-colors shadow-sm"
+              >
+                Load More ({records.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>

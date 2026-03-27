@@ -3,6 +3,19 @@
 import { useState, useEffect } from 'react';
 import { Save, Trash2, Plus, Trophy, Edit2, X } from 'lucide-react';
 
+function DumbbellSpinner() {
+  return (
+    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="10" width="3" height="4" rx="1" fill="currentColor" />
+      <rect x="1" y="9" width="4" height="6" rx="1" fill="currentColor" opacity="0.6" />
+      <rect x="19" y="10" width="3" height="4" rx="1" fill="currentColor" />
+      <rect x="19" y="9" width="4" height="6" rx="1" fill="currentColor" opacity="0.6" />
+      <rect x="5" y="11" width="14" height="2" rx="1" fill="currentColor" opacity="0.8" />
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 48" strokeLinecap="round" opacity="0.4" />
+    </svg>
+  );
+}
+
 const EXERCISES = [
   'Bench Press',
   'Squat',
@@ -30,6 +43,7 @@ export default function ExerciseTab({ userId }: { userId: string }) {
   const [records, setRecords] = useState<ExerciseRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [visibleCount, setVisibleCount] = useState(5);
   
   const [formData, setFormData] = useState({
@@ -90,6 +104,7 @@ export default function ExerciseTab({ userId }: { userId: string }) {
       return;
     }
 
+    setIsSaving(true);
     const newRecord = {
       id: editingId || crypto.randomUUID(),
       userId,
@@ -112,6 +127,8 @@ export default function ExerciseTab({ userId }: { userId: string }) {
       setCurrentSets([{ weight: 0, reps: 0 }]);
     } catch (error) {
       alert('Failed to save exercise.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -292,10 +309,11 @@ export default function ExerciseTab({ userId }: { userId: string }) {
         <div className="flex justify-end mt-6 pt-4 border-t border-gray-100">
           <button 
             type="submit"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors"
+            disabled={isSaving}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
-            {editingId ? 'Update Exercise' : 'Save Exercise'}
+            {isSaving ? <DumbbellSpinner /> : <Save className="w-4 h-4" />}
+            {isSaving ? 'Saving...' : (editingId ? 'Update Exercise' : 'Save Exercise')}
           </button>
         </div>
       </form>

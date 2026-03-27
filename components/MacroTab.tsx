@@ -3,6 +3,19 @@
 import { useState, useEffect } from 'react';
 import { Save, Trash2, PieChart, Target, Edit2, X, Sparkles, Loader2, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 
+function FoodSpinner() {
+  return (
+    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeDasharray="10 46" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.2" />
+      <circle cx="10" cy="11" r="1" fill="currentColor" opacity="0.7" />
+      <circle cx="13" cy="10" r="0.8" fill="currentColor" opacity="0.7" />
+      <circle cx="13" cy="13" r="1" fill="currentColor" opacity="0.7" />
+      <circle cx="10" cy="13.5" r="0.7" fill="currentColor" opacity="0.5" />
+    </svg>
+  );
+}
+
 
 type MacroRecord = {
   id: string;
@@ -11,7 +24,7 @@ type MacroRecord = {
   fat: number;
   carbs: number;
   protein: number;
-  foodDescription?: string;
+  foodDescription: string;
 };
 
 type MacroTargets = {
@@ -25,6 +38,7 @@ export default function MacroTab({ userId }: { userId: string }) {
   const [records, setRecords] = useState<MacroRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [showTargets, setShowTargets] = useState(false);
   const [inputMode, setInputMode] = useState<'manual' | 'ai'>('manual');
   const [aiInput, setAiInput] = useState('');
@@ -103,6 +117,7 @@ export default function MacroTab({ userId }: { userId: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const newRecord: MacroRecord = {
       id: editingId || crypto.randomUUID(),
       userId,
@@ -133,6 +148,8 @@ export default function MacroTab({ userId }: { userId: string }) {
       }));
     } catch (error) {
       alert('Failed to save macros.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -313,12 +330,17 @@ export default function MacroTab({ userId }: { userId: string }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            {formData.foodDescription && (
-              <div className="mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-sm text-indigo-800">
-                <strong>Analyzed from:</strong> {formData.foodDescription}
-                <div className="text-xs mt-1 text-indigo-600">Please review and adjust the estimated macros below before saving.</div>
-              </div>
-            )}
+            <div className="mb-4 space-y-1">
+              <label className="text-sm font-medium text-gray-700">Food Description</label>
+              <textarea
+                rows={2}
+                required
+                placeholder="e.g. 2 boiled eggs and a cup of oatmeal / Nasi goreng dengan ayam dan telur"
+                value={formData.foodDescription}
+                onChange={e => setFormData({...formData, foodDescription: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none"
+              />
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-1">
@@ -389,10 +411,11 @@ export default function MacroTab({ userId }: { userId: string }) {
                   )}
                   <button 
                     type="submit"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors"
+                    disabled={isSaving}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <Save className="w-4 h-4" />
-                    {editingId ? 'Update Macros' : 'Save Macros'}
+                    {isSaving ? <FoodSpinner /> : <Save className="w-4 h-4" />}
+                    {isSaving ? 'Saving...' : (editingId ? 'Update Macros' : 'Save Macros')}
                   </button>
                 </div>
               </div>

@@ -43,7 +43,7 @@ export async function ensureSheets(doc: GoogleSpreadsheet) {
 
   const requiredSheets = [
     { title: 'user', headers: ['id', 'username'] },
-    { title: 'measurements', headers: ['id', 'userId', 'date', 'bodyweight', 'waist', 'arms', 'chest', 'thigh', 'bodyFat', 'bodyMuscle'] },
+    { title: 'measurements', headers: ['id', 'userId', 'date', 'bodyweight', 'waist', 'arms', 'armsLeft', 'chest', 'thigh', 'shoulder', 'bodyFat', 'bodyMuscle'] },
     { title: 'macro calories', headers: ['id', 'userId', 'date', 'fat', 'carbs', 'protein', 'foodDescription'] },
     { title: 'exercise tracking', headers: ['id', 'userId', 'date', 'exercise', 'sets'] }
   ];
@@ -69,6 +69,20 @@ export async function ensureSheets(doc: GoogleSpreadsheet) {
         } else {
           console.error(`Failed to create sheet ${reqSheet.title}:`, err);
         }
+      }
+    } else {
+      // Sheet exists — ensure all required headers are present
+      try {
+        await existingSheet.loadHeaderRow();
+        const currentHeaders: string[] = existingSheet.headerValues || [];
+        const missingHeaders = reqSheet.headers.filter(h => !currentHeaders.includes(h));
+        if (missingHeaders.length > 0) {
+          console.log(`Adding missing headers to "${reqSheet.title}":`, missingHeaders);
+          await existingSheet.setHeaderRow([...currentHeaders, ...missingHeaders]);
+          needsReload = true;
+        }
+      } catch (err: any) {
+        console.error(`Failed to check/update headers for sheet ${reqSheet.title}:`, err);
       }
     }
   }

@@ -3,6 +3,19 @@
 import { useState, useEffect } from 'react';
 import { Save, Trash2, Edit2, X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
+function TapeMeasureSpinner() {
+  return (
+    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" strokeDasharray="14 42" strokeLinecap="round" />
+      <rect x="7" y="10.5" width="10" height="3" rx="1" fill="currentColor" opacity="0.4" />
+      <line x1="9" y1="10.5" x2="9" y2="13.5" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="11" y1="10.5" x2="11" y2="13.5" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="13" y1="10.5" x2="13" y2="13.5" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="15" y1="10.5" x2="15" y2="13.5" stroke="currentColor" strokeWidth="0.8" />
+    </svg>
+  );
+}
+
 type MeasurementRecord = {
   id: string;
   userId: string;
@@ -10,8 +23,10 @@ type MeasurementRecord = {
   bodyweight: number;
   waist: number;
   arms: number;
+  armsLeft?: number;
   chest: number;
   thigh: number;
+  shoulder?: number;
   bodyFat?: number;
   bodyMuscle?: number;
 };
@@ -20,14 +35,17 @@ export default function MeasurementTab({ userId }: { userId: string }) {
   const [records, setRecords] = useState<MeasurementRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [visibleCount, setVisibleCount] = useState(5);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     bodyweight: '',
     waist: '',
     arms: '',
+    armsLeft: '',
     chest: '',
     thigh: '',
+    shoulder: '',
     bodyFat: '',
     bodyMuscle: '',
   });
@@ -53,6 +71,7 @@ export default function MeasurementTab({ userId }: { userId: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const newRecord: MeasurementRecord = {
       id: editingId || crypto.randomUUID(),
       userId,
@@ -60,8 +79,10 @@ export default function MeasurementTab({ userId }: { userId: string }) {
       bodyweight: Number(formData.bodyweight),
       waist: Number(formData.waist),
       arms: Number(formData.arms),
+      armsLeft: formData.armsLeft ? Number(formData.armsLeft) : undefined,
       chest: Number(formData.chest),
       thigh: Number(formData.thigh),
+      shoulder: formData.shoulder ? Number(formData.shoulder) : undefined,
       bodyFat: formData.bodyFat ? Number(formData.bodyFat) : undefined,
       bodyMuscle: formData.bodyMuscle ? Number(formData.bodyMuscle) : undefined,
     };
@@ -82,13 +103,17 @@ export default function MeasurementTab({ userId }: { userId: string }) {
         bodyweight: '',
         waist: '',
         arms: '',
+        armsLeft: '',
         chest: '',
         thigh: '',
+        shoulder: '',
         bodyFat: '',
         bodyMuscle: '',
       }));
     } catch (error) {
       alert('Failed to save record.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -99,8 +124,10 @@ export default function MeasurementTab({ userId }: { userId: string }) {
       bodyweight: record.bodyweight.toString(),
       waist: record.waist.toString(),
       arms: record.arms.toString(),
+      armsLeft: record.armsLeft?.toString() || '',
       chest: record.chest.toString(),
       thigh: record.thigh.toString(),
+      shoulder: record.shoulder?.toString() || '',
       bodyFat: record.bodyFat?.toString() || '',
       bodyMuscle: record.bodyMuscle?.toString() || '',
     });
@@ -114,8 +141,10 @@ export default function MeasurementTab({ userId }: { userId: string }) {
       bodyweight: '',
       waist: '',
       arms: '',
+      armsLeft: '',
       chest: '',
       thigh: '',
+      shoulder: '',
       bodyFat: '',
       bodyMuscle: '',
     }));
@@ -210,7 +239,7 @@ export default function MeasurementTab({ userId }: { userId: string }) {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Arms (cm)</label>
+            <label className="text-sm font-medium text-gray-700">Arms R (cm)</label>
             <input 
               type="number" 
               step="0.1"
@@ -218,6 +247,17 @@ export default function MeasurementTab({ userId }: { userId: string }) {
               placeholder="e.g. 35"
               value={formData.arms}
               onChange={e => setFormData({...formData, arms: e.target.value})}
+              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Arms L (cm) <span className="text-gray-400 font-normal">(Optional)</span></label>
+            <input 
+              type="number" 
+              step="0.1"
+              placeholder="e.g. 34.5"
+              value={formData.armsLeft}
+              onChange={e => setFormData({...formData, armsLeft: e.target.value})}
               className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -242,6 +282,17 @@ export default function MeasurementTab({ userId }: { userId: string }) {
               placeholder="e.g. 60"
               value={formData.thigh}
               onChange={e => setFormData({...formData, thigh: e.target.value})}
+              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Shoulder Diameter <span className="text-gray-400 font-normal">(Optional)</span></label>
+            <input 
+              type="number" 
+              step="0.1"
+              placeholder="e.g. 45"
+              value={formData.shoulder}
+              onChange={e => setFormData({...formData, shoulder: e.target.value})}
               className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
@@ -272,10 +323,11 @@ export default function MeasurementTab({ userId }: { userId: string }) {
         <div className="flex justify-end mt-6">
           <button 
             type="submit"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors"
+            disabled={isSaving}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2.5 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
-            {editingId ? 'Update Measurement' : 'Save Measurement'}
+            {isSaving ? <TapeMeasureSpinner /> : <Save className="w-4 h-4" />}
+            {isSaving ? 'Saving...' : (editingId ? 'Update Measurement' : 'Save Measurement')}
           </button>
         </div>
       </form>
@@ -299,9 +351,11 @@ export default function MeasurementTab({ userId }: { userId: string }) {
                   <th className="px-4 py-3 font-medium">Fat %</th>
                   <th className="px-4 py-3 font-medium">Muscle %</th>
                   <th className="px-4 py-3 font-medium">Waist</th>
-                  <th className="px-4 py-3 font-medium">Arms</th>
+                  <th className="px-4 py-3 font-medium">Arms R</th>
+                  <th className="px-4 py-3 font-medium">Arms L</th>
                   <th className="px-4 py-3 font-medium">Chest</th>
                   <th className="px-4 py-3 font-medium">Thigh</th>
+                  <th className="px-4 py-3 font-medium">Shoulder</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -333,12 +387,20 @@ export default function MeasurementTab({ userId }: { userId: string }) {
                         {renderDiff(record.arms, prevRecord?.arms, false)}
                       </td>
                       <td className="px-4 py-3">
+                        {record.armsLeft ? `${record.armsLeft}cm` : '-'}
+                        {renderDiff(record.armsLeft, prevRecord?.armsLeft, false)}
+                      </td>
+                      <td className="px-4 py-3">
                         {record.chest}cm
                         {renderDiff(record.chest, prevRecord?.chest, false)}
                       </td>
                       <td className="px-4 py-3">
                         {record.thigh}cm
                         {renderDiff(record.thigh, prevRecord?.thigh, false)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {record.shoulder ? `${record.shoulder}cm` : '-'}
+                        {renderDiff(record.shoulder, prevRecord?.shoulder, false)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">

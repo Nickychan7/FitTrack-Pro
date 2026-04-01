@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { ANALYZE_MACROS_SYSTEM_PROMPT, ANALYZE_MACROS_USER_PROMPT } from '@/lib/prompts/analyze-macros';
 
 export async function POST(req: NextRequest) {
   const { description } = await req.json();
@@ -18,14 +19,8 @@ export async function POST(req: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a nutrition expert. Understand both English and Bahasa Indonesia. Always respond with valid JSON only, no extra text.',
-        },
-        {
-          role: 'user',
-          content: `Analyze the following food/drink description and estimate the macronutrients in grams. Description: "${description}". For each macro (fat, carbs, protein), estimate a realistic minimum and maximum range, then return the MAXIMUM value of each range. Respond with a JSON object containing exactly these fields: fat (number), carbs (number), protein (number).`,
-        },
+        { role: 'system', content: ANALYZE_MACROS_SYSTEM_PROMPT },
+        { role: 'user', content: ANALYZE_MACROS_USER_PROMPT(description) },
       ],
       response_format: { type: 'json_object' },
       temperature: 0.3,

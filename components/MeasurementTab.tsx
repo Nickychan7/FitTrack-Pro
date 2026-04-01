@@ -335,7 +335,42 @@ export default function MeasurementTab({ userId }: { userId: string }) {
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">History</h3>
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading records...</div>
+          <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+            <table className="w-full text-sm text-left whitespace-nowrap">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                  <th className="px-4 py-3 font-medium">Weight</th>
+                  <th className="px-4 py-3 font-medium">Fat %</th>
+                  <th className="px-4 py-3 font-medium">Muscle %</th>
+                  <th className="px-4 py-3 font-medium">Waist</th>
+                  <th className="px-4 py-3 font-medium">Arms R</th>
+                  <th className="px-4 py-3 font-medium">Arms L</th>
+                  <th className="px-4 py-3 font-medium">Chest</th>
+                  <th className="px-4 py-3 font-medium">Thigh</th>
+                  <th className="px-4 py-3 font-medium">Shoulder</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 animate-pulse">
+                {[...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-10"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-10"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-10"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-14"></div></td>
+                    <td className="px-4 py-3 text-right"><div className="h-4 bg-gray-200 rounded w-16 ml-auto"></div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : records.length === 0 ? (
           <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
             No measurements recorded yet.

@@ -427,7 +427,36 @@ export default function MacroTab({ userId }: { userId: string }) {
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">History</h3>
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading records...</div>
+          <div className="space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm animate-pulse">
+                <div className="bg-gray-50 px-5 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <div className="h-4 bg-gray-200 rounded w-28"></div>
+                  <div className="h-7 bg-gray-200 rounded w-32"></div>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="h-2 bg-gray-200 rounded-full w-full"></div>
+                  {[...Array(3)].map((_, j) => (
+                    <div key={j} className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <div className="h-3 bg-gray-200 rounded w-16"></div>
+                        <div className="h-3 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div className="h-1.5 bg-gray-200 rounded-full w-full"></div>
+                    </div>
+                  ))}
+                  <div className="border border-gray-100 rounded-lg overflow-hidden mt-2">
+                    {[...Array(2)].map((_, j) => (
+                      <div key={j} className="p-4 border-b border-gray-100 last:border-b-0">
+                        <div className="h-4 bg-gray-200 rounded w-48 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-36"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : records.length === 0 ? (
           <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
             No macros recorded yet.

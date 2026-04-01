@@ -321,7 +321,27 @@ export default function ExerciseTab({ userId }: { userId: string }) {
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Workout Log</h3>
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading records...</div>
+          <div className="space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm animate-pulse">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <div className="h-4 bg-gray-200 rounded w-28"></div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[...Array(2)].map((_, j) => (
+                    <div key={j} className="p-4">
+                      <div className="h-4 bg-gray-200 rounded w-36 mb-3"></div>
+                      <div className="flex gap-2">
+                        {[...Array(3)].map((_, k) => (
+                          <div key={k} className="h-7 bg-gray-200 rounded w-20"></div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : Object.keys(groupedRecords).length === 0 ? (
           <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
             No exercises recorded yet.
